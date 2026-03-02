@@ -34,6 +34,29 @@ containers:
 
 这样，来自 `myregistry.example.com` 和 `private.registry.local` 的镜像将不会被替换。
 
+## 指定 Namespace 和仓库
+
+默认情况下，不设置参数时不处理任何 Pod。必须同时设置 `--namespaces` 和 `--repositories` 参数才会启用镜像替换功能。
+
+- `--namespaces`: 指定需要处理的 namespace 列表（逗号分隔）
+- `--repositories`: 指定需要处理的镜像仓库列表（逗号分隔）
+
+例如：
+```yaml
+containers:
+  - command:
+      - /repimage
+      - --namespaces=kube-system,default
+      - --repositories=k8s.gcr.io,gcr.io,quay.io
+```
+
+这样配置后，只有在 `kube-system` 或 `default` namespace 中使用 `k8s.gcr.io`、`gcr.io` 或 `quay.io` 仓库镜像的容器才会被替换。
+
+**注意：**
+- 两个参数必须同时设置才会生效
+- 任意一个参数未设置，则不处理任何 Pod
+- 使用 AND 逻辑：Pod 必须同时满足 namespace 和仓库条件
+
 ## 自定义镜像前缀
 
 [内网再部署一级缓存](https://github.com/DaoCloud/public-image-mirror/tree/main/docs/local-cache)
