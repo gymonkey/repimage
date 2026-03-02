@@ -22,7 +22,7 @@ var (
 	repositories  = flag.String("repositories", "", "Comma-separated list of repositories to process (required)")
 )
 
-func serve(w http.ResponseWriter, r *http.Request, prefix string, ignoreDomains []string) {
+func serve(w http.ResponseWriter, r *http.Request, prefix string, ignoreDomains []string, namespaces []string, repositories []string) {
 	klog.Infof("request URI: %s", r.RequestURI)
 	var body []byte
 	if r.Body != nil {
@@ -46,7 +46,7 @@ func serve(w http.ResponseWriter, r *http.Request, prefix string, ignoreDomains 
 		klog.Error(err)
 		resAdmissionReview.Response = utils.ToAdmissionResponse(err)
 	} else {
-		resAdmissionReview.Response = utils.AdmitPods(prefix, ignoreDomains, reqAdmissionReview)
+		resAdmissionReview.Response = utils.AdmitPods(prefix, ignoreDomains, namespaces, repositories, reqAdmissionReview)
 	}
 
 	resAdmissionReview.Response.UID = reqAdmissionReview.Request.UID
@@ -72,7 +72,26 @@ func servePods(w http.ResponseWriter, r *http.Request) {
 			domains[i] = strings.TrimSpace(domains[i])
 		}
 	}
-	serve(w, r, *prefix, domains)
+
+	var nsList []string
+	if *namespaces != "" {
+		nsList = strings.Split(*namespaces, ",")
+		// Trim whitespace from each namespace
+		for i := range nsList {
+			nsList[i] = strings.TrimSpace(nsList[i])
+		}
+	}
+
+	var repoList []string
+	if *repositories != "" {
+		repoList = strings.Split(*repositories, ",")
+		// Trim whitespace from each repository
+		for i := range repoList {
+			repoList[i] = strings.TrimSpace(repoList[i])
+		}
+	}
+
+	serve(w, r, *prefix, domains, nsList, repoList)
 }
 
 func main() {
