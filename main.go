@@ -18,6 +18,8 @@ var (
 	key           = flag.String("key", "./certs/serverKey.pem", "Path to TLS key file")
 	prefix        = flag.String("prefix", "m.daocloud.io", "Image mirror prefix")
 	ignoreDomains = flag.String("ignore-domains", "", "Comma-separated list of domains to ignore (not replace)")
+	namespaces    = flag.String("namespaces", "", "Comma-separated list of namespaces to process (required)")
+	repositories  = flag.String("repositories", "", "Comma-separated list of repositories to process (required)")
 )
 
 func serve(w http.ResponseWriter, r *http.Request, prefix string, ignoreDomains []string) {
