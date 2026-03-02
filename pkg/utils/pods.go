@@ -53,6 +53,29 @@ func AdmitPods(prefix string, ignoreDomains []string, namespaces []string, repos
 		}
 	}
 
+	// Check if both namespaces and repositories are configured
+	if len(namespaces) == 0 || len(repositories) == 0 {
+		klog.Info("namespaces or repositories not configured, skipping image rewriting")
+		reviewResponse := admissionv1.AdmissionResponse{}
+		reviewResponse.Allowed = true
+		return &reviewResponse
+	}
+
+	// Check if the pod's namespace is in the allowed list
+	namespaceAllowed := false
+	for _, ns := range namespaces {
+		if pod.Namespace == ns {
+			namespaceAllowed = true
+			break
+		}
+	}
+	if !namespaceAllowed {
+		klog.Infof("pod namespace %q not in allowed list, skipping image rewriting", pod.Namespace)
+		reviewResponse := admissionv1.AdmissionResponse{}
+		reviewResponse.Allowed = true
+		return &reviewResponse
+	}
+
 	reviewResponse := admissionv1.AdmissionResponse{}
 	containers := pod.Spec.Containers
 
