@@ -22,7 +22,7 @@ type patchSpec struct {
 }
 
 // AdmitPods processes admission review requests for pods and replaces container images, skipping ignored domains
-func AdmitPods(prefix string, ignoreDomains []string, ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
+func AdmitPods(prefix string, ignoreDomains []string, namespaces []string, repositories []string, ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
 	klog.Info("admitting pods...")
 	podResource := metav1.GroupVersionResource{
 		Group:    "",
