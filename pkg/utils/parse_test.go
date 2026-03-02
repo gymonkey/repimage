@@ -160,3 +160,46 @@ func TestReplaceImageName(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractRepository(t *testing.T) {
+	tests := []struct {
+		name     string
+		image    string
+		expected string
+	}{
+		{
+			name:     "simple image without domain",
+			image:    "nginx",
+			expected: "docker.io",
+		},
+		{
+			name:     "image with user/repo",
+			image:    "library/nginx",
+			expected: "docker.io",
+		},
+		{
+			name:     "image with domain",
+			image:    "k8s.gcr.io/coredns/coredns",
+			expected: "k8s.gcr.io",
+		},
+		{
+			name:     "image with three parts",
+			image:    "gcr.io/my-project/my-image",
+			expected: "gcr.io",
+		},
+		{
+			name:     "legacy docker.io domain",
+			image:    "index.docker.io/library/nginx",
+			expected: "docker.io",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := ExtractRepository(tt.image)
+			if result != tt.expected {
+				t.Errorf("ExtractRepository(%q) = %q, want %q", tt.image, result, tt.expected)
+			}
+		})
+	}
+}

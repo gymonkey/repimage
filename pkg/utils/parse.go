@@ -88,3 +88,34 @@ func isLegacyDefaultDomain(name string) bool {
 	_, ok := legacyDefaultDomain[name]
 	return ok
 }
+
+// ExtractRepository extracts the repository/domain from an image reference
+func ExtractRepository(image string) string {
+	parts := strings.SplitN(image, "/", 3)
+	switch len(parts) {
+	case 1:
+		// nginx -> docker.io
+		return defaultDomain
+	case 2:
+		// user/repo -> docker.io (if not a domain)
+		// domain/repo -> domain
+		if !isDomain(parts[0]) {
+			return defaultDomain
+		}
+		if isLegacyDefaultDomain(parts[0]) {
+			return defaultDomain
+		}
+		return parts[0]
+	case 3:
+		// domain/user/repo -> domain
+		// user/repo/tag -> docker.io (if not a domain)
+		if !isDomain(parts[0]) {
+			return defaultDomain
+		}
+		if isLegacyDefaultDomain(parts[0]) {
+			return defaultDomain
+		}
+		return parts[0]
+	}
+	return defaultDomain
+}
