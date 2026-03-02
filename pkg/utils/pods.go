@@ -81,6 +81,20 @@ func AdmitPods(prefix string, ignoreDomains []string, namespaces []string, repos
 
 	var updated bool
 	for i, container := range containers {
+		repo := ExtractRepository(container.Image)
+		repoAllowed := false
+		for _, allowedRepo := range repositories {
+			if repo == allowedRepo {
+				repoAllowed = true
+				break
+			}
+		}
+
+		if !repoAllowed {
+			klog.Infof("image repository %q not in allowed list, skipping image %q", repo, container.Image)
+			continue
+		}
+
 		newImage := ReplaceImageName(prefix, ignoreDomains, container.Image)
 		if newImage != container.Image {
 			containers[i].Image = newImage
