@@ -102,6 +102,29 @@ func AdmitPods(prefix string, ignoreDomains []string, namespaces []string, repos
 		}
 	}
 
+	// Also process init containers
+	for i, container := range pod.Spec.InitContainers {
+		repo := ExtractRepository(container.Image)
+		repoAllowed := false
+		for _, allowedRepo := range repositories {
+			if repo == allowedRepo {
+				repoAllowed = true
+				break
+			}
+		}
+
+		if !repoAllowed {
+			klog.Infof("init container image repository %q not in allowed list, skipping image %q", repo, container.Image)
+			continue
+		}
+
+		newImage := ReplaceImageName(prefix, ignoreDomains, container.Image)
+		if newImage != container.Image {
+			pod.Spec.InitContainers[i].Image = newImage
+			updated = true
+		}
+	}
+
 	reviewResponse.Allowed = true
 
 	if !updated {
